@@ -47,7 +47,7 @@
 # 🐉 四、工具使用
 
 
-## JS 逆向模版 \*\*重要\*\*
+## JS 逆向模版 /*/*重要/*/*
 
 - 在 encryptFunction 函数里写好加密逻辑
 - 在 decryptFunction 函数里写好解密逻辑
@@ -191,9 +191,9 @@ exports.decrypt = decrypt ;
 ## 右键功能标记请求包字段
 
 使用建议：可标记多处字段；勿标记"Host: "、协议、请求方法等请求包必要字段名
-![右键](.\README.assets\0202141917189.png)
+![右键](README.assets/0202141917189.png)
 
-![右键](README.assets\0202142013170.png)
+![右键](README.assets/0202142013170.png)
 
 
 ## 导入模版文件
@@ -202,36 +202,36 @@ exports.decrypt = decrypt ;
 
 使用建议：加载前预先命令行调试JS
 
-![JS](README.assets\0202142848948.png)
+![JS](README.assets/0202142848948.png)
 
 ## 发送请求
 
 **发送时自动加密字段，响应包成功解密**
 
-![请求](.\README.assets\0202143907292.png)
+![请求](./README.assets/0202143907292.png)
 
 
 使用建议：实际请求包和响应体在日志中查看；指定一个日志输出文件，burp插件输出窗口有数据量限制
 
-![日志](README.assets\0202144259457.png)
+![日志](README.assets/0202144259457.png)
 
 ## 字段匹配方式说明
 
 默认使用正则表达式为
 
-![正则](README.assets\0202144653976.png)
+![正则](README.assets/0202144653976.png)
 
 测试是否能提取到字段
 
-![提取](README.assets\0202144848219.png)
+![提取](README.assets/0202144848219.png)
 
 可自定义表达式，测试提取成功后点击“更新”，全局生效
 
-![自定义](README.assets\0202145333206.png)
+![自定义](README.assets/0202145333206.png)
 
 保留前后缀，切换后全局生效
 
-![自定义](README.assets\0202145503368.png)
+![自定义](README.assets/0202145503368.png)
 
 **使用建议：偶有测试自定义表达式时成功，但请求时提取不到，建议多观察请求日志，改进表达式；表达式内最好不使用如"Host: "等头部字段做匹配**
 
