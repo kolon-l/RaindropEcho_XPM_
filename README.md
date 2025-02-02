@@ -47,7 +47,7 @@
 # 🐉 四、工具使用
 
 
-## JS 逆向模版 /*/*重要/*/*
+## JS 逆向模版 \*\*重要\*\*
 
 - 在 encryptFunction 函数里写好加密逻辑
 - 在 decryptFunction 函数里写好解密逻辑
