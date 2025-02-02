@@ -191,7 +191,7 @@ exports.decrypt = decrypt ;
 ## 右键功能标记请求包字段
 
 使用建议：可标记多处字段；勿标记"Host: "、协议、请求方法等请求包必要字段名
-![](.\README.assets\0202141917189.png)
+![右键](.\README.assets\0202141917189.png)
 
 ![右键](README.assets\0202142013170.png)
 
