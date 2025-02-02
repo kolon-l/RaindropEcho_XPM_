@@ -1,5 +1,5 @@
 # 写在前面
-该工具为原git项目RaindropEcho的JAVA重构，有一些功能增删，更适合日常使用。原作者:tingyusys，项目地址:[RaindrioEcho](https://github.com/tingyusys/RaindropEcho)。
+该工具为原git项目RaindropEcho的JAVA重构，有一些功能增删，更适合日常使用。原作者:tingyusys，项目地址:[RaindropEcho](https://github.com/tingyusys/RaindropEcho)。
 
 工具特点：
 
