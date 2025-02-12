@@ -12,7 +12,7 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
      |    |   \\ / __ \\|  |   |  \\|    `   \\  | \\(  <_> )  |_> >        \\  \\___|   Y  (  <_> )    /     \\\s
      |____|_  /(____  /__|___|  /_______  /__|   \\____/|   __/_______  /\\___  >___|  /\\____/____/___/\\  \\
             \\/      \\/        \\/        \\/             |__|          \\/     \\/     \\/     /_____/     \\_/
-                                                               |_|      v1.0.0
+                                                               |_|      v1.2.0
                                                                         by: TingYuSYS
                                                                         modify by : kolon
     

@@ -14,6 +14,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class TagContextMenu implements ContextMenuItemsProvider {
     MontoyaApi api;
@@ -28,30 +29,30 @@ public class TagContextMenu implements ContextMenuItemsProvider {
             List<Component> menuItemList = new ArrayList<>();
 
             JMenuItem retrieveRequestItem = new JMenuItem("AddTag");
-
             MessageEditorHttpRequestResponse messageEditorHttpRequestResponse = event.messageEditorRequestResponse().get();
-            retrieveRequestItem.addActionListener(l -> {
-                 Range range = messageEditorHttpRequestResponse.selectionOffsets().get();
-                 HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
-                 ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
-//                 api.logging().logToOutput("select:"+selectByteArray.toString());
-                 ByteArray startByteArray = httpRequest.toByteArray().subArray(0,range.startIndexInclusive());
-//                 api.logging().logToOutput("start:"+startByteArray.toString());
+            if (!messageEditorHttpRequestResponse.selectionOffsets().isEmpty()) {
+                retrieveRequestItem.addActionListener(l -> {
 
-                 byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(),range.endIndexExclusive(),httpRequest.toByteArray().length());
-                 ByteArray endByteArray = ByteArray.byteArray(bytes);
-//                 api.logging().logToOutput("end:"+endByteArray.toString());
+                    Range range = messageEditorHttpRequestResponse.selectionOffsets().get();
+                    HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
+                    ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
 
-                 ByteArray newByteArray = startByteArray;
-                 String newSelcet = "{-"+selectByteArray.toString()+"-}";
-                 newByteArray = newByteArray.withAppended(newSelcet);
-                 newByteArray = newByteArray.withAppended(endByteArray);
+                    ByteArray startByteArray = httpRequest.toByteArray().subArray(0, range.startIndexInclusive());
 
-                 messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
-            });
+                    byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(), range.endIndexExclusive(), httpRequest.toByteArray().length());
+                    ByteArray endByteArray = ByteArray.byteArray(bytes);
 
-            menuItemList.add(retrieveRequestItem);
-            return menuItemList;
+                    ByteArray newByteArray = startByteArray;
+                    String newSelcet = "{-" + selectByteArray.toString() + "-}";
+                    newByteArray = newByteArray.withAppended(newSelcet);
+                    newByteArray = newByteArray.withAppended(endByteArray);
+
+                    messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
+                });
+
+                menuItemList.add(retrieveRequestItem);
+                return menuItemList;
+            }
         }
 
         return null;

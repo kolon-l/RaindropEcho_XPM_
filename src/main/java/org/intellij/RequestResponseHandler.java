@@ -36,9 +36,7 @@ public class RequestResponseHandler implements HttpHandler {
                 String encrypt= null;
                 try {
                     encrypt = jsHandler.call_js_endecryption_function(file_js,matche.group(1),true);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
+                }catch (Exception e) {
                     throw new RuntimeException(e);
                 }
                 matche.appendReplacement(result, encrypt);
@@ -50,9 +48,7 @@ public class RequestResponseHandler implements HttpHandler {
                     String S1 = matche.group(1);
                     String S2 = matche.group(0);
                     matche.appendReplacement(result, (S2+S1).split(S1)[0]+encrypt+(S2+S1).split(S1)[1]);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
+                }catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -84,20 +80,16 @@ public class RequestResponseHandler implements HttpHandler {
                                     matchFunc(header.name()+": "+header.value(),file_js).replace(header.name()+": ",""));
                         }
 //                    提取body,匹配并替换加密结果
-                        int bodyOffset = newRequest.bodyOffset();
-                        int bodySize = newRequest.body().length();
-                        ByteArray bodyArray = newRequest.toByteArray().subArray(bodyOffset, bodyOffset + bodySize);
-                        String bodyString = bodyArray.toString();
-
+//                        int bodyOffset = newRequest.bodyOffset();
+//                        int bodySize = newRequest.body().length();
+//                        ByteArray bodyArray = newRequest.toByteArray().subArray(bodyOffset, bodyOffset + bodySize);
+                        String bodyString = newRequest.bodyToString();
                         newRequest = newRequest.withBody(matchFunc(bodyString,file_js));
-
                     } catch (Exception e) {
-
                         montoyaApi.logging().logToError(e.getMessage());
                     }
                 }
             }
-            montoyaApi.logging().logToOutput(newRequest.toByteArray().toString());
             return RequestToBeSentAction.continueWith(newRequest);
         }
         return null;
@@ -117,19 +109,22 @@ public class RequestResponseHandler implements HttpHandler {
                 if (domain.equals(domain_js) && path.startsWith(path_js)) {
                     try {
 //                    提取body,匹配并替换加密结果
-                        int bodyOffset = httpResponseReceived.bodyOffset();
-                        int bodySize = httpResponseReceived.body().length();
-                        ByteArray bodyArray = httpResponseReceived.toByteArray().subArray(bodyOffset, bodyOffset + bodySize);
-                        String bodyString = bodyArray.toString();
+//                        int bodyOffset = httpResponseReceived.bodyOffset();
+//                        int bodySize = httpResponseReceived.body().length();
+//                        ByteArray bodyArray = httpResponseReceived.toByteArray().subArray(bodyOffset, bodyOffset + bodySize);
+                        String bodyString = httpResponseReceived.bodyToString();
                         String decrypt = jsHandler.call_js_endecryption_function(file_js, bodyString, false);
                         HttpResponse newResponse = httpResponseReceived.withBody(ByteArray.byteArray(decrypt.getBytes(StandardCharsets.UTF_8)));
-//                        打印原resp body
+
+                        montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString());
                         montoyaApi.logging().logToOutput(bodyString);
                         return ResponseReceivedAction.continueWith(newResponse);
                     } catch (Exception e) {
+                        montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString());
+                        montoyaApi.logging().logToOutput(httpResponseReceived.bodyToString());
                         montoyaApi.logging().logToError(e.getMessage());
                     }
-                    return null;
+                    return ResponseReceivedAction.continueWith(httpResponseReceived);
                 }
             }
         }

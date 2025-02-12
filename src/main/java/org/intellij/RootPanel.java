@@ -48,7 +48,6 @@ public class RootPanel {
         api = montoyaApi;
         model = new DefaultListModel();
         addButton.addActionListener(new ActionListener() {
-            //            增加按钮事件
             public void actionPerformed(ActionEvent e) {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(new FileNameExtensionFilter("JavaScript Files", "js"));
@@ -71,7 +70,6 @@ public class RootPanel {
 
 
         deleteButton.addActionListener(new ActionListener() {
-            //            删除按钮事件
             public void actionPerformed(ActionEvent e) {
                 model.removeElementAt(jsList.getSelectedIndex());
                 jsList.setModel(model);
@@ -80,16 +78,14 @@ public class RootPanel {
         regexButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                正则提取
                 String regexTest = regexTextField.getText();
                 if (regexTest != null || regexTest.length() > 0) {
                     Pattern pattern = Pattern.compile(regexTest);
                     String text = textArea.getText();
                     Matcher matcher = pattern.matcher(text);
                     resTextArea.replaceRange("", 0, resTextArea.getText().length());
-                    int tag = getTag();
+                    int tag = tagCheckBox.isSelected() ? 0 : 1;
 
-                    montoyaApi.logging().logToOutput("tabtag:" + tag);
                     while (matcher.find()) {
                         resTextArea.append(matcher.group(tag) + "\n");
                     }
@@ -99,13 +95,8 @@ public class RootPanel {
         updateRegButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                更新正则
+//                更新正则、前后缀tag
                 regex = regexTextField.getText();
-            }
-        });
-        tagCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
                 tag = tagCheckBox.isSelected() ? 0 : 1;
             }
         });
