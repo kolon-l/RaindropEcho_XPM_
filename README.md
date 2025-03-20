@@ -3,8 +3,7 @@
 
 工具特点：
 
-
-1. 可实现请求、响应的自动加解密，适用于Reapter、Intruder下的接口测试；
+1. 可实现请求、响应的自动加解密，适用于Repeater、Intruder下的接口测试；
 2. 自定义正则匹配逻辑。匹配到的内容会交给对应JS处理；
 3. 自定义加解密JS，
   适用于能直接扣JS的情况：简单的加解密方法可直接复制前端源码，复杂情况需要做逆向；已提供Webpack的逆向模板；
@@ -27,6 +26,8 @@
 * [x] 扩大接口匹配范围，匹配子目录下所有接口----2025.0106
 * [x] Java重构，使用新的Montoya API(2024.12)；使用正则匹配请求包中要加密的字段，支持url、header、body中多个字段的同时加密----20250130
 * [x] UI更新;新增正则功能，可修改默认表达式;新增右键标记功能----20250131
+* [x] 支持http接口，可通过muban_main.js启动服务
+* [x] 支持WebSocket接口，提供hook方式，可实现JS RPC调用
 
 
 # 🚨 三、准备工作
@@ -54,7 +55,7 @@
 
 - 在 encryptFunction 函数里写好加密逻辑
 - 在 decryptFunction 函数里写好解密逻辑
-- 在 config 里写好逆向代码对应的域名和接口
+- 调用模式：server、encrypt_c/decrypt_c 通过命令行读取数据、encrypt/decrypt 通过文件读取数据，细节详见代码
 
 **JS 逆向模版:muban_main.js：**
 
@@ -81,11 +82,6 @@ function decryptFunction(data){
   let res = data;
   return res
 }
-// 编写监控域名和接口
-const config = {
-  domain: "",
-  path: ""
-};
 
 ...
 ```
@@ -144,14 +140,83 @@ exports.encrypt = encrypt ;
 global.decrypt = decrypt ;
 exports.decrypt = decrypt ;
 ```
-## 右键功能标记请求包字段
+
+JS RPC实现方式，可参考[JsRpc](https://github.com/jxhczhl/JsRpc)
+
+**注入JS环境**
+```rpc js
+let WsClient = function(wsURL,process){
+    this.wsURL = wsURL;
+    this.process = process;
+    this.socket = undefined;
+    if (!wsURL) {
+        throw new Error('wsURL 为空!!')
+    }
+    this.connect()
+}
+WsClient.prototype.connect = function () {
+    console.log('begin of connect to wsURL: ' + this.wsURL);
+    var _this = this;
+    try {
+        this.socket = new WebSocket(this.wsURL);
+        this.socket.onmessage = function (e) {
+            _this.handlerRequest(e.data)
+        }
+    } catch (e) {
+        console.log("连接失败");
+    }
+    this.socket.onclose = function () {
+        console.log('rpc已关闭');
+    }
+    this.socket.addEventListener('open', (event) => {
+        console.log("rpc连接成功");
+    });
+    this.socket.addEventListener('error', (event) => {
+        console.error('rpc连接出错,请检查是否打开服务端:', event.error);
+    })
+};
+WsClient.prototype.send = function (msg) {
+    this.socket.send(msg)
+}
+WsClient.prototype.handlerRequest = function (data,process) {
+    var _this = this;
+    try {
+        newdata = _this.process(data);
+        console.log(data+"\n处理后："+newdata);
+        _this.send(newdata);
+        return;  
+    } catch (e) {
+        console.log("error: " + e);
+        _this.send("error: " + e);
+    }
+}
+```
+
+**WebSocket连接方式**
+```连接方式
+//Websocket client 连接方法，自定义处理逻辑，
+var encryptClient = new WsClient("ws://127.0.0.1:12080/encrypt",function(data){
+//    var encrypt = this.EncryptFunc(data);
+    return data+"en";
+});
+
+var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
+//    var decrypt = this.DecryptFunc(data);
+    return data+"de";
+});
+
+```
+
+
+## 右键功能标记请求包字段、发送目标到插件页面
 
 使用建议：可标记多处字段；勿标记"Host: "、协议、请求方法等请求包必要字段名
-![右键](README.assets\0202141917189.png)
 
-![右键](README.assets\0202142013170.png)
+![133141.png](README.assets/133141.png)
 
+![133254.png](README.assets/133254.png)
 
+![133406.png](README.assets/133406.png)
 ## 导入模版文件
 
 **选择 js 文件（注：js 文件路径一定不要有中文）**
@@ -175,22 +240,37 @@ exports.decrypt = decrypt ;
 
 默认使用正则表达式为
 
-![正则](README.assets\0202144653976.png)
+![正则](README.assets/134541.png)
 
 测试是否能提取到字段
 
 ![提取](README.assets\0202144848219.png)
 
-可自定义表达式，测试提取成功后点击“更新”，全局生效
+可自定义表达式
 
-![自定义](README.assets\0202145333206.png)
-
-保留前后缀，切换后点击“更新”,全局生效
-
-![自定义](README.assets\0202145503368.png)
+![134713.png](README.assets/134713.png)
 
 **使用建议：偶有测试自定义表达式时成功，但请求时提取不到，建议多观察请求日志，改进表达式；表达式内最好不使用如"Host: "等头部字段做匹配**
 
+## 其他问题
+
+如遇找不到node情况，报错：
+```
+java.io.IOException: Cannot run program "node": CreateProcess error=2, 系统找不到指定的文件。
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1170)
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1089)
+	at org.intellij.UsuallyJS.get_domain_and_path_from_js(UsuallyJS.java:24)
+	at org.intellij.RootPanel$1.actionPerformed(RootPanel.java:59)
+```
+建议排查burp启动脚本是否附加了系统环境变量，配置参考：
+```
+@SET JAVA_HOME=%~dp0\jdk\
+@SET Path=%JAVA_HOME%\bin;%Path%
+@echo %JAVA_HOME%
+@java --version
+@cd BurpSuite
+@java -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED -noverify -javaagent:burpsuitloader1.jar=loader,hanizfy -jar burpsuite_pro.jar
+```
 
 # 🖐 五、免责声明
 

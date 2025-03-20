@@ -14,13 +14,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class TagContextMenu implements ContextMenuItemsProvider {
     MontoyaApi api;
+    RootPanel panel;
 
-    public TagContextMenu(MontoyaApi montoyaApi) {
+    public TagContextMenu(MontoyaApi montoyaApi, RootPanel rootPanel) {
         api = montoyaApi;
+        panel = rootPanel;
     }
     public List<Component> provideMenuItems(ContextMenuEvent event) {
         // 创建右键菜单列表
@@ -28,10 +29,20 @@ public class TagContextMenu implements ContextMenuItemsProvider {
         {
             List<Component> menuItemList = new ArrayList<>();
 
-            JMenuItem retrieveRequestItem = new JMenuItem("AddTag");
+            JMenuItem addTagItem = new JMenuItem("AddTag");
+            JMenuItem sendTargetItem = new JMenuItem("SendTarget");
             MessageEditorHttpRequestResponse messageEditorHttpRequestResponse = event.messageEditorRequestResponse().get();
+
+            sendTargetItem.addActionListener(l -> {
+//                自动添加目标
+                String host = messageEditorHttpRequestResponse.requestResponse().request().headerValue("Host");
+                String path = messageEditorHttpRequestResponse.requestResponse().request().pathWithoutQuery();
+                panel.addList(host, path);
+            });
+            menuItemList.add(sendTargetItem);
+
             if (!messageEditorHttpRequestResponse.selectionOffsets().isEmpty()) {
-                retrieveRequestItem.addActionListener(l -> {
+                addTagItem.addActionListener(l -> {
 
                     Range range = messageEditorHttpRequestResponse.selectionOffsets().get();
                     HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
@@ -43,16 +54,16 @@ public class TagContextMenu implements ContextMenuItemsProvider {
                     ByteArray endByteArray = ByteArray.byteArray(bytes);
 
                     ByteArray newByteArray = startByteArray;
-                    String newSelcet = "{-" + selectByteArray.toString() + "-}";
+                    String newSelcet = "(-" + selectByteArray.toString() + "-)";
                     newByteArray = newByteArray.withAppended(newSelcet);
                     newByteArray = newByteArray.withAppended(endByteArray);
 
                     messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
                 });
-
-                menuItemList.add(retrieveRequestItem);
-                return menuItemList;
+                menuItemList.add(addTagItem);
             }
+
+            return menuItemList;
         }
 
         return null;

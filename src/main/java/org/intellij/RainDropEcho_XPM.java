@@ -4,6 +4,9 @@ import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
 
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+
 public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandler {
     private String LOGO = """
     __________        .__       ________                     ___________      .__               ____  ___
@@ -12,7 +15,7 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
      |    |   \\ / __ \\|  |   |  \\|    `   \\  | \\(  <_> )  |_> >        \\  \\___|   Y  (  <_> )    /     \\\s
      |____|_  /(____  /__|___|  /_______  /__|   \\____/|   __/_______  /\\___  >___|  /\\____/____/___/\\  \\
             \\/      \\/        \\/        \\/             |__|          \\/     \\/     \\/     /_____/     \\_/
-                                                               |_|      v1.2.0
+                                                               |_|      v2.0.0
                                                                         by: TingYuSYS
                                                                         modify by : kolon
     
@@ -21,7 +24,7 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
     private String PluginName = "Raindrop Echo_XPM";
     private MontoyaApi api;
     private RootPanel rootPanel;
-    private UsuallyJS jsHandler;
+    private AutoUtil autoUtil;
     private RequestResponseHandler reqResHandler;
     private TagContextMenu menu;
     @Override
@@ -31,19 +34,25 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
         api.extension().setName(PluginName);
         api.extension().registerUnloadingHandler( this);
 
-        jsHandler = new UsuallyJS(api);
-        rootPanel = new RootPanel(api,jsHandler);
+        autoUtil = new AutoUtil(api);
+        rootPanel = new RootPanel(api,autoUtil);
         api.userInterface().registerSuiteTab(PluginName,rootPanel.$$$getRootComponent$$$());
-        reqResHandler = new RequestResponseHandler(api,rootPanel,jsHandler);
+        reqResHandler = new RequestResponseHandler(api,rootPanel,autoUtil);
         api.http().registerHttpHandler(reqResHandler);
 
-        api.userInterface().registerContextMenuItemsProvider( new TagContextMenu(api));
+        api.userInterface().registerContextMenuItemsProvider( new TagContextMenu(api,rootPanel));
 
         api.logging().logToOutput(LOGO);
+
     }
 
     @Override
     public void extensionUnloaded() {
+        try {
+            autoUtil.deleteWSServers();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         api.logging().logToOutput("[*] Extension has been unloaded.");
     }
 }

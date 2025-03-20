@@ -1,30 +1,19 @@
 const fs = require('fs');
+const express = require('express');
 
-require('./muban_ende.js');
+require('./muban_ende-test.js');
 // 上面自己编写加密函数
 
+// 写加密函数的加载方式
 function encryptFunction(data) {
-    // 写加密函数的加载方式
-    // 示例
-    // 使用 JSON.parse 将字符串转换为 JSON 对象
-    const json_data = JSON.parse(data);
-    // 原数据什么格式，就返回什么格式
-    let json_1=encrypt(`{"mobile":"${json_data.mobile}","bizType":"${json_data.bizType}"}`);
-    return `{"key":"${json_1.key}","body":"${json_1.data}","app_header":{"partner_no":"0","referrer_no":null}}`
+    return encrypt(data)
 }
 
 function decryptFunction(data){
-    // 解密函数的加载方式
-    // 示例
-    // 原样返回
-    let res = data;
+    // let res = (JSON.parse(data));
+    let res = data+"de"
     return res
 }
-// 编写监控域名和接口
-const config = {
-    domain: "",
-    path: ""
-};
 
 
 // 下面代码不要动---------------------------------------------------------------
@@ -39,14 +28,55 @@ if (mode === 'config') {
 
 let inputData;
 let outputData;
-if (process.argv.length < 4) {
+if (process.argv.length < 3) {
+    console.error("Usage: node script.js [mode]");
     console.error("Usage: node script.js [mode] [input]");
     console.error("Usage: node script.js [mode] [inputfile] [outputfile]");
     process.exit(1);
 }
+else if(process.argv.length == 3){
+    switch(mode){
+        case 'server':
+            var http = require('http');
+            const url = require('url');
+            const querystring = require('querystring');
+            http.createServer(function (req, res) {
+                let path = url.parse(req.url);
+                let postparms = '';
+                if (path.pathname === '/encrypt') {
+                    console.log("encrypt");
+                    req.on('data', (parms) => {
+                        postparms += parms;
+                    });
+                    req.on('end', () => {
+                        console.log(postparms);
+                        console.log(encryptFunction(postparms));
+                        // Data = "X-BASE-DATA=" + Data;
+                        res.end(encryptFunction(postparms));
+                    })
+                } else if (path.pathname === '/decrypt') {
+                    console.log("decrypt")
+                    req.on('data', (parms) => {
+                        postparms += parms
+                    })
+                    req.on('end', () => {
+                        console.log(postparms);
+                        let dec=decryptFunction(postparms);
+                        console.log(dec);
+                        // Data = "X-BASE-DATA=" + Data;
+                        res.end(dec);
+                    })
+                } else{
+                    res.write("end");
+                    res.end()
+
+                }
+            }).listen(8888);
+    }
+
+}
 else if(process.argv.length == 4){
     inputData = process.argv[3];
-    // 直接传值
     switch(mode){
         case 'encrypt_c':
             outputData = encryptFunction(inputData);
