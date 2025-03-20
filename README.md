@@ -212,43 +212,43 @@ var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
 
 使用建议：可标记多处字段；勿标记"Host: "、协议、请求方法等请求包必要字段名
 
-![133141.png](README.assets\133141.png)
+![133141.png](README.assets/133141.png)
 
-![133254.png](README.assets\133254.png)
+![133254.png](README.assets/133254.png)
 
-![133406.png](README.assets\133406.png)
+![133406.png](README.assets/133406.png)
 ## 导入模版文件
 
 **选择 js 文件（注：js 文件路径一定不要有中文）**
 
 使用建议：加载前预先命令行调试JS
 
-![JS](README.assets\0202142848948.png)
+![JS](README.assets/0202142848948.png)
 
 ## 发送请求
 
 **发送时自动加密字段，响应包成功解密**
 
-![请求](README.assets\0202143907292.png)
+![请求](README.assets/0202143907292.png)
 
 
 使用建议：实际请求包和响应体在日志中查看；指定一个日志输出文件，burp插件输出窗口有数据量限制
 
-![日志](README.assets\0202144259457.png)
+![日志](README.assets/0202144259457.png)
 
 ## 字段匹配方式说明
 
 默认使用正则表达式为
 
-![正则](README.assets\134541.png)
+![正则](README.assets/134541.png)
 
 测试是否能提取到字段
 
-![提取](README.assets\0202144848219.png)
+![提取](README.assets/0202144848219.png)
 
 可自定义表达式
 
-![134713.png](README.assets\134713.png)
+![134713.png](README.assets/134713.png)
 
 **使用建议：偶有测试自定义表达式时成功，但请求时提取不到，建议多观察请求日志，改进表达式；表达式内最好不使用如"Host: "等头部字段做匹配**
 
