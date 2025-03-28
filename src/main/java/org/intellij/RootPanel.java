@@ -57,18 +57,28 @@ public class RootPanel {
         $$$setupUI$$$();
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if(jsTable.isEditing()){
+                    jsTable.getCellEditor().stopCellEditing();
+                }
                 Object[] data = {false, "", "", regex, false, "JSFile", ""};
                 tableModel.addRow(data);
             }
         });
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                tableModel.removeRow(jsTable.getSelectedRow());
-                if (tableModel.getValueAt(jsTable.getSelectedRow(), 5).equals("WebSocket")) {
-                    String target = tableModel.getValueAt(jsTable.getSelectedRow(), 6).toString();
+
+                int selectedRow = jsTable.getSelectedRow();
+                if(jsTable.isEditing()){
+                    jsTable.getCellEditor().stopCellEditing();
+                }
+
+                if (tableModel.getValueAt(selectedRow, 5).equals("WebSocket")) {
+                    String target = tableModel.getValueAt(selectedRow, 6).toString();
                     autoUtil.deleteWSServer(target);
                 }
-            }
+                jsTable.clearSelection();
+                tableModel.removeRow(selectedRow);
+                }
         });
         regexButton.addActionListener(new ActionListener() {
             @Override
@@ -90,6 +100,7 @@ public class RootPanel {
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
+
                 jsList.clear();
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
 //                    启用时加入List
@@ -113,6 +124,8 @@ public class RootPanel {
                         }
                     }
                 }
+                jsTable.clearSelection();
+                jsTable.repaint();
             }
         });
     }
