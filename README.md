@@ -3,11 +3,11 @@
 
 工具特点：
 
-1. 可实现请求、响应的自动加解密，适用于Repeater、Intruder下的接口测试；
-2. 自定义正则匹配逻辑。匹配到的内容会交给对应JS处理；
-3. 自定义加解密JS，
-  适用于能直接扣JS的情况：简单的加解密方法可直接复制前端源码，复杂情况需要做逆向；已提供Webpack的逆向模板；
-4. 某些特定字段的生成/改造。
+1. 可实现**请求、响应的自动加解密**，适用于**Repeater、Intruder下的接口测试**；
+2. 自定义正则匹配逻辑。对请求头/体中匹配到的内容进行处理；
+3. **自定义加解密JS，适用于能直接扣JS的情况**：简单的加解密方法可直接复制前端源码，复杂情况需要做逆向；已提供Webpack的逆向模板；
+4. **特定字段的生成/改造**。
+5. **支持WebSocket调用接口**，提供一种简化的JS RPC方法。
 
 # ✈️ 一、工具概述
 
@@ -16,16 +16,16 @@
 
 # 📝 二、TODO
 
-## 功能支持的更新[README.md](../RaindropEcho_XPM_/README.md)
+## 功能支持的更新
 
 * [x] 提供 JS 逆向模版，支持自定义编写：指定域名下指定接口的加解密算法
 * [x] 支持导入多个模版，同时破解多个接口的加密算法
 * [x] 导入模板后，将数据包送到插件里，RaindropEcho 会自动解密，并将解密的数据包放入到重放器
 * [x] 修改完数据后，发送数据包，RaindropEcho 会自动拦截明文数据包，进行加密后发出
-* [x] 支持响应数据包解密，支持Repeater、Intruder自动加、解密----2024.1002
-* [x] 扩大接口匹配范围，匹配子目录下所有接口----2025.0106
-* [x] Java重构，使用新的Montoya API(2024.12)；使用正则匹配请求包中要加密的字段，支持url、header、body中多个字段的同时加密----20250130
-* [x] UI更新;新增正则功能，可修改默认表达式;新增右键标记功能----20250131
+* [x] 支持响应数据包解密，支持Repeater、Intruder自动加、解密
+* [x] 扩大接口匹配范围，匹配子目录下所有接口
+* [x] Java重构，使用新的Montoya API(2024.12)；使用正则匹配请求包中要加密的字段，支持url、header、body中多个字段的同时加密
+* [x] UI更新;新增正则功能，可修改默认表达式;新增右键标记功能
 * [x] 支持http接口，可通过muban_main.js启动服务
 * [x] 支持WebSocket接口，提供hook方式，可实现JS RPC调用
 
@@ -35,17 +35,17 @@
 - **环境准备**
 
       开发版本:
-
+      
           Burpsuite2024.9.2;
 
 
           JDK 17;
-          
+
 
           nodejs v22.12.0;
 
 
-      建议使用较新版本burp，目前已知2022版本无法加载,jdk1.8无法加载。
+      建议使用较新版本burp，已知2022版本无法加载,jdk1.8无法加载。
 
 
 # 🐉 四、工具使用
@@ -55,7 +55,7 @@
 
 - 在 encryptFunction 函数里写好加密逻辑
 - 在 decryptFunction 函数里写好解密逻辑
-- 调用模式：server、encrypt_c/decrypt_c 通过命令行读取数据、encrypt/decrypt 通过文件读取数据，细节详见代码
+- 命令行调用模式：server-启用Http服务端，默认端口8888、encrypt_c/decrypt_c-通过命令行读取数据、encrypt/decrypt-通过文件读取数据，细节详见代码
 
 **JS 逆向模版:muban_main.js：**
 
@@ -141,9 +141,12 @@ global.decrypt = decrypt ;
 exports.decrypt = decrypt ;
 ```
 
-JS RPC实现方式，可参考[JsRpc](https://github.com/jxhczhl/JsRpc)
+
 
 **注入JS环境**
+
+JS RPC实现方式，可参考[JsRpc](https://github.com/jxhczhl/JsRpc)
+
 ```rpc js
 let WsClient = function(wsURL,process){
     this.wsURL = wsURL;
@@ -210,7 +213,13 @@ var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
 
 ## 右键功能标记请求包字段、发送目标到插件页面
 
-使用建议：可标记多处字段；勿标记"Host: "、协议、请求方法等请求包必要字段名
+使用建议：
+
+1、 可标记多处字段；
+
+2、 勿标记"Host: "、协议、请求方法等请求包必要字段名
+
+3、 Montoya API 自身问题，报文内存在中文时无法正确获取偏移，此问题暂时无法修复
 
 ![133141.png](README.assets/133141.png)
 
@@ -221,9 +230,7 @@ var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
 
 **选择 js 文件（注：js 文件路径一定不要有中文）**
 
-使用建议：加载前预先命令行调试JS
-
-![JS](README.assets/0202142848948.png)
+使用建议：加载前请预先命令行调试JS
 
 ## 发送请求
 
@@ -250,7 +257,7 @@ var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
 
 ![134713.png](README.assets/134713.png)
 
-**使用建议：偶有测试自定义表达式时成功，但请求时提取不到，建议多观察请求日志，改进表达式；表达式内最好不使用如"Host: "等头部字段做匹配**
+**使用建议：偶有测试自定义表达式时成功，但请求时提取不到，建议多观察请求日志，改进表达式；切勿使用如"Host: "等头部字段做匹配**
 
 ## 其他问题
 
@@ -271,6 +278,8 @@ java.io.IOException: Cannot run program "node": CreateProcess error=2, 系统找
 @cd BurpSuite
 @java -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED -noverify -javaagent:burpsuitloader1.jar=loader,hanizfy -jar burpsuite_pro.jar
 ```
+
+
 
 # 🖐 五、免责声明
 
