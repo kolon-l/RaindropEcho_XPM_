@@ -16,18 +16,14 @@ public class WSServer extends WebSocketServer {
         super(address);
         this.api = montoyaApi;
     }
-
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         api.logging().logToOutput("Connected: "+webSocket.getRemoteSocketAddress());
     }
-
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         api.logging().logToOutput("Closed: "+webSocket.getRemoteSocketAddress());
     }
-
-
     public void onMessage(WebSocket webSocket, String s) {
         api.logging().logToOutput("Message: "+s);
         BlockingQueue<String> queue = responseQueues.get(webSocket);
@@ -35,17 +31,12 @@ public class WSServer extends WebSocketServer {
             queue.offer(s); // 非阻塞添加
         }
     }
-
-
     @Override
     public void onError(WebSocket webSocket, Exception e) {
         api.logging().logToError("Error: "+e.getMessage());
     }
-
     @Override
-    public void onStart() {
-    }
-
+    public void onStart() {}
     public String sendAndWaitResponse(WebSocket conn, String data, long timeout, TimeUnit unit)
             throws InterruptedException, TimeoutException {
         // 创建或获取该连接的队列

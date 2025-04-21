@@ -23,6 +23,82 @@ public class AutoUtil {
         api = montoyaApi;
     }
 
+    public String matchFunc(String data,String ende_config,String mode_config, boolean isencrypt){
+        String result = data;
+        if(isencrypt){
+            try {
+                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,true);
+                else if(mode_config == "JSFile") result = call_js_endecryption_function(ende_config,data,true);
+                else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,true);
+            }catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            try {
+                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,false);
+                else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false);
+                else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,false);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return result;
+    }
+
+
+    public String matchFunc(String data,String ende_config,String reg,String tag,String mode_config, boolean isencrypt){
+        Pattern pattern = Pattern.compile(reg);
+        Matcher matche = pattern.matcher(data);
+
+        if(isencrypt){
+            StringBuffer result = new StringBuffer() ;
+            while (matche.find()) {
+                if (tag=="0"){
+                    String encrypt= null;
+                    String g1=matche.group(1);
+                    try {
+                        if (mode_config=="API") encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                        else if(mode_config == "JSFile") encrypt = call_js_endecryption_function(ende_config,matche.group(1),true);
+                        else encrypt = call_websocket_endecryption_function(ende_config,matche.group(1),true);
+                    }catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    matche.appendReplacement(result, encrypt);
+                }
+                else{
+                    String encrypt= null;
+                    try {
+                        if (mode_config=="API") encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                        else if(mode_config == "JSFile") encrypt = call_js_endecryption_function(ende_config,matche.group(1),true);
+                        else encrypt = call_websocket_endecryption_function(ende_config,matche.group(1),true);
+                        String S1 = matche.group(1);
+                        String S2 = matche.group(0);
+                        matche.appendReplacement(result, (S2+S1).split(S1)[0]+encrypt+(S2+S1).split(S1)[1]);
+                    }catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            matche.appendTail(result);
+            return result.toString();
+        }
+        else{
+
+            String result="body处理失败";
+            try {
+                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,false);
+                else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false);
+                else result = call_websocket_endecryption_function(ende_config,data,false);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return result;
+        }
+    }
+
+
     public  String call_js_endecryption_function(String jsFile, String data,Boolean isencrypt) throws Exception {
 
         // 构建执行 Node.js 脚本的命令

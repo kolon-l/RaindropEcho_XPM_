@@ -1,40 +1,31 @@
 const fs = require('fs');
-const express = require('express');
 
-require('./muban_ende-test.js');
-// 上面自己编写加密函数
+// 需要自拟的部分---------------------------------------------------------------
+require('./muban_ende.js');
 
-// 写加密函数的加载方式
+// 供burp调用的加密函数的加载方式,可用于进一步处理加密结果;入参为打标记字段
 function encryptFunction(data) {
     return encrypt(data)
 }
 
+// 供burp调用的解密函数的加载方式;入参为响应体
 function decryptFunction(data){
     // let res = (JSON.parse(data));
-    let res = data+"de"
-    return res
+    return decrypt(data)
 }
-
 
 // 下面代码不要动---------------------------------------------------------------
-
-// 检查传递的参数数量
-const mode = process.argv[2];
-
-if (mode === 'config') {
-    console.log(JSON.stringify(config));
-    process.exit(0);
-}
-
-let inputData;
-let outputData;
-if (process.argv.length < 3) {
-    console.error("Usage: node script.js [mode]");
-    console.error("Usage: node script.js [mode] [input]");
-    console.error("Usage: node script.js [mode] [inputfile] [outputfile]");
+if (process.argv.length < 4) {
+    console.log("Usage: node script.js [server] [port]");
+    console.log("Usage: node script.js [encrypt_c|decrypt_c] [input]");
+    console.log("Usage: node script.js [encrypt|decrypt] [inputfile] [outputfile]");
     process.exit(1);
 }
-else if(process.argv.length == 3){
+
+const mode = process.argv[2];
+if(process.argv.length == 4){
+    let input = process.argv[3];
+    let output;
     switch(mode){
         case 'server':
             var http = require('http');
@@ -51,7 +42,6 @@ else if(process.argv.length == 3){
                     req.on('end', () => {
                         console.log(postparms);
                         console.log(encryptFunction(postparms));
-                        // Data = "X-BASE-DATA=" + Data;
                         res.end(encryptFunction(postparms));
                     })
                 } else if (path.pathname === '/decrypt') {
@@ -63,58 +53,56 @@ else if(process.argv.length == 3){
                         console.log(postparms);
                         let dec=decryptFunction(postparms);
                         console.log(dec);
-                        // Data = "X-BASE-DATA=" + Data;
                         res.end(dec);
                     })
                 } else{
                     res.write("end");
                     res.end()
-
                 }
-            }).listen(8888);
-    }
-
-}
-else if(process.argv.length == 4){
-    inputData = process.argv[3];
-    switch(mode){
+            }).listen(input);
+            break;
         case 'encrypt_c':
-            outputData = encryptFunction(inputData);
+            output = encryptFunction(input);
+            console.log(output);
+            process.exit(0);
             break;
         case 'decrypt_c':
-            outputData = decryptFunction(inputData);
+            output = decryptFunction(input);
+            console.log(output);
+            process.exit(0);
             break;
         default:
             console.error(`Unknown mode: ${mode}`);
             process.exit(1);
     }
-    console.log(outputData);
-    process.exit(0);
 }
-else if(process.argv.length >= 4){
+else if(process.argv.length > 4){
+    const mode = process.argv[2];
     let inputFile = process.argv[3];
     let outputFile = process.argv[4];
-    // 读取输入文件内容
-    try {
-        inputData = fs.readFileSync(inputFile, 'utf8');
-    } catch (err) {
-        console.error(`Error reading input file: ${inputFile}`, err);
-        process.exit(1);
-    }
-
     switch (mode) {
         case 'encrypt':
+            try {
+                inputData = fs.readFileSync(inputFile, 'utf8');
+            } catch (err) {
+                console.error(`Error reading input file: ${inputFile}`, err);
+                process.exit(1);
+            }
             outputData = encryptFunction(inputData);
             break;
         case 'decrypt':
+            try {
+                inputData = fs.readFileSync(inputFile, 'utf8');
+            } catch (err) {
+                console.error(`Error reading input file: ${inputFile}`, err);
+                process.exit(1);
+            }
             outputData = decryptFunction(inputData);
             break;
         default:
             console.error(`Unknown mode: ${mode}`);
             process.exit(1);
     }
-
-    // 将输出数据写入输出文件
     try {
         fs.writeFileSync(outputFile, outputData, 'utf8');
     } catch (err) {

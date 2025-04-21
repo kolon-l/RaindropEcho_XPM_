@@ -33,16 +33,16 @@ var loader = undefined;
 */
 
 
-//自拟加解密调用函数
+//自拟加解密函数
 function encrypt(t){
-    var d=loader("xxx");
-    var D= d.default.encrypt;
-    return D(t)
+    // var d=loader("xxx");
+    // var D= d.default.encrypt;
+    return t+"en"
 }
 function decrypt(t){
-    var d=loader("xxx");
-    var D= d.default.decrypt;
-    return D(t)
+    // var d=loader("xxx");
+    // var D= d.default.decrypt;
+    return t+"de"
 }
 
 global.encrypt = encrypt ;//将需要调用的函数或对象编程全局

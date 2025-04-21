@@ -4,9 +4,6 @@ import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
 
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-
 public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandler {
     private String LOGO = """
     __________        .__       ________                     ___________      .__               ____  ___
@@ -15,7 +12,7 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
      |    |   \\ / __ \\|  |   |  \\|    `   \\  | \\(  <_> )  |_> >        \\  \\___|   Y  (  <_> )    /     \\\s
      |____|_  /(____  /__|___|  /_______  /__|   \\____/|   __/_______  /\\___  >___|  /\\____/____/___/\\  \\
             \\/      \\/        \\/        \\/             |__|          \\/     \\/     \\/     /_____/     \\_/
-                                                               |_|      v2.0.1
+                                                               |_|      v2.2.0
                                                                         by: TingYuSYS
                                                                         modify by : kolon
     
