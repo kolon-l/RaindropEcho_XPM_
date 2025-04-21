@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,12 +23,19 @@ public class AutoUtil {
     AutoUtil(MontoyaApi montoyaApi) {
         api = montoyaApi;
     }
-
     public String matchFunc(String data,String ende_config,String mode_config, boolean isencrypt){
+        return matchFunc(data,ende_config,mode_config,isencrypt,false);
+    }
+
+
+    public String matchFunc(String data,String ende_config,String mode_config, boolean isencrypt, boolean isFromRightButton){
         String result = data;
         if(isencrypt){
             try {
-                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,true);
+                if (mode_config=="API") {
+                    result = call_http_encryption_function(ende_config,data,true);
+                    result = result.substring(0,result.length()-1);
+                }
                 else if(mode_config == "JSFile") result = call_js_endecryption_function(ende_config,data,true);
                 else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,true);
             }catch (Exception e) {
@@ -35,12 +43,28 @@ public class AutoUtil {
             }
         }
         else {
-            try {
-                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,false);
-                else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false);
-                else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,false);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            if (isFromRightButton){
+                try {
+                    if (mode_config=="API") {
+                        result = call_http_encryption_function(ende_config,data,false,isFromRightButton);
+                        result = result.substring(0,result.length()-1);
+                    }
+                    else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false,isFromRightButton);
+                    else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,false,isFromRightButton);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                try {
+                    if (mode_config=="API") {
+                        result = call_http_encryption_function(ende_config,data,false);
+                        result = result.substring(0,result.length()-1);
+                    }
+                    else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false);
+                    else if (mode_config=="WebSocket") result = call_websocket_endecryption_function(ende_config,data,false);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -59,7 +83,10 @@ public class AutoUtil {
                     String encrypt= null;
                     String g1=matche.group(1);
                     try {
-                        if (mode_config=="API") encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                        if (mode_config=="API") {
+                            encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                            encrypt = encrypt.substring(0,encrypt.length()-1);
+                        }
                         else if(mode_config == "JSFile") encrypt = call_js_endecryption_function(ende_config,matche.group(1),true);
                         else encrypt = call_websocket_endecryption_function(ende_config,matche.group(1),true);
                     }catch (Exception e) {
@@ -70,7 +97,10 @@ public class AutoUtil {
                 else{
                     String encrypt= null;
                     try {
-                        if (mode_config=="API") encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                        if (mode_config=="API") {
+                            encrypt = call_http_encryption_function(ende_config,matche.group(1),true);
+                            encrypt = encrypt.substring(0,encrypt.length()-1);
+                        }
                         else if(mode_config == "JSFile") encrypt = call_js_endecryption_function(ende_config,matche.group(1),true);
                         else encrypt = call_websocket_endecryption_function(ende_config,matche.group(1),true);
                         String S1 = matche.group(1);
@@ -88,7 +118,10 @@ public class AutoUtil {
 
             String result="body处理失败";
             try {
-                if (mode_config=="API") result = call_http_encryption_function(ende_config,data,false);
+                if (mode_config=="API") {
+                    result = call_http_encryption_function(ende_config,data,false);
+                    result = result.substring(0,result.length()-1);
+                }
                 else if (mode_config=="JSFile") result = call_js_endecryption_function(ende_config,data,false);
                 else result = call_websocket_endecryption_function(ende_config,data,false);
             } catch (Exception e) {
@@ -99,13 +132,25 @@ public class AutoUtil {
     }
 
 
-    public  String call_js_endecryption_function(String jsFile, String data,Boolean isencrypt) throws Exception {
+    public String call_js_endecryption_function(String jsFile, String data,Boolean isencrypt) throws Exception {
+        return call_js_endecryption_function(jsFile,data,isencrypt,false);
+    }
+
+    public  String call_js_endecryption_function(String jsFile, String data,Boolean isencrypt,Boolean isFromRightButton) throws Exception {
 
         // 构建执行 Node.js 脚本的命令
         List<String> command = new ArrayList<>();
         command.add("node");
         command.add(jsFile);
-        if(isencrypt){command.add("encrypt_c");}else{command.add("decrypt_c");}
+        if(isencrypt){command.add("encrypt_c");}
+        else{
+            if(isFromRightButton){
+                command.add("decrypt_c_RB");
+            }
+            else {
+                command.add("decrypt_c");
+            }
+        }
         command.add("\""+data.replace("\\","\\\\").replace("\"","\\\"")+"\"");
         // 执行 Node.js 脚本
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -175,10 +220,20 @@ public class AutoUtil {
     }
 
     public String call_http_encryption_function(String url, String data,Boolean isencrypt) throws Exception {
+        return call_http_encryption_function(url,data,isencrypt,false);
+    }
+    public String call_http_encryption_function(String url, String data,Boolean isencrypt,Boolean isFromRightButton) throws Exception {
         String outData = "";
         try{
             if(isencrypt){outData=sendPost(url+"/encrypt",data);}
-            else {outData=sendPost(url+"/decrypt",data);}
+            else {
+                if(isFromRightButton){
+                    outData=sendPost(url+"/decrypt_RB",data);
+                }
+                else {
+                    outData=sendPost(url+"/decrypt",data);
+                }
+            }
         }
         catch (Exception e){
             api.logging().logToError("call http function :"+url+". Error: "+e.toString());
@@ -356,7 +411,11 @@ public class AutoUtil {
         }
     }
 
+
     public String call_websocket_endecryption_function(String target, String data,Boolean isencrypt) throws Exception {
+        return call_websocket_endecryption_function(target,data,isencrypt,false);
+    }
+    public String call_websocket_endecryption_function(String target, String data,Boolean isencrypt,Boolean isFromRightButton) throws Exception {
 
         WebSocketURLParser.WebSocketURLInfo url =WebSocketURLParser.parseWebSocketURL(target);
 
@@ -373,15 +432,25 @@ public class AutoUtil {
                     if (conn.isOpen()) {
                         try {
                             // 根据条件发送消息并等待响应
+
                             if (isencrypt && conn.getResourceDescriptor().contains("encrypt")) {
-                                String response = "";
+                                String response = data;
                                 synchronized(conn) {
                                     response = server.sendAndWaitResponse(conn, data, 30, TimeUnit.SECONDS);
                                 }
                                 output = response;
                                 break; // 获取第一个响应后退出
-                            } else if (!isencrypt && conn.getResourceDescriptor().contains("decrypt")) {
-                                String response = "";
+                            }
+                            if (!isencrypt && conn.getResourceDescriptor().contains("decrypt_RB")) {
+                                String response = data;
+                                synchronized(conn) {
+                                    response = server.sendAndWaitResponse(conn, data, 30, TimeUnit.SECONDS);
+                                }
+                                output = response;
+                                break;
+                            }
+                            if (!isencrypt && conn.getResourceDescriptor().contains("decrypt")) {
+                                String response = data;
                                 synchronized(conn) {
                                     response = server.sendAndWaitResponse(conn, data, 30, TimeUnit.SECONDS);
                                 }

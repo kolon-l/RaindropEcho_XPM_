@@ -4,8 +4,9 @@ import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.core.Range;
 import burp.api.montoya.core.ToolType;
-import burp.api.montoya.http.message.HttpHeader;
+import burp.api.montoya.core.Annotations;
 import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.ui.contextmenu.ContextMenuEvent;
 import burp.api.montoya.ui.contextmenu.ContextMenuItemsProvider;
 import burp.api.montoya.ui.contextmenu.MessageEditorHttpRequestResponse;
@@ -76,40 +77,86 @@ public class TagContextMenu implements ContextMenuItemsProvider {
             if (!messageEditorHttpRequestResponse.selectionOffsets().isEmpty()) {
                 encodeTtem.addActionListener(l -> {
 
+
                     Range range = messageEditorHttpRequestResponse.selectionOffsets().get();
-                    HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
-                    String req = messageEditorHttpRequestResponse.requestResponse().request().toString();
-                    ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
-                    ByteArray startByteArray = httpRequest.toByteArray().subArray(0, range.startIndexInclusive());
+                    if (messageEditorHttpRequestResponse.selectionContext().name()=="REQUEST") {
+                        HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
+                        ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
+                        ByteArray startByteArray = httpRequest.toByteArray().subArray(0, range.startIndexInclusive());
 
-                    byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(), range.endIndexExclusive(), httpRequest.toByteArray().length());
-                    ByteArray endByteArray = ByteArray.byteArray(bytes);
-                    ByteArray newByteArray = startByteArray;
-                    String newSelect = selectByteArray.toString();
-                    String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
-                    String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
+                        byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(), range.endIndexExclusive(), httpRequest.toByteArray().length());
+                        ByteArray endByteArray = ByteArray.byteArray(bytes);
+                        ByteArray newByteArray = startByteArray;
+                        String newSelect = selectByteArray.toString();
+                        api.logging().logToOutput("original:\n" + newSelect);
+                        String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
+                        String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
 
-                    String[] config = panel.findConf(host, path);
+                        String[] config = panel.findConf(host, path);
 
-                    if (config != null) {
-                        String mode_config = config[4];
-                        String ende_config = config[5];
+                        if (config != null) {
+                            String mode_config = config[5];
+                            String ende_config = config[6];
+                            try {
+                                if (ende_config == "") {
+                                    throw new Exception();
+                                }
+                                newSelect = autoUtil.matchFunc(newSelect, ende_config, mode_config, true);
+                                api.logging().logToOutput("encrypt:\n" + newSelect+"\n");
+                            } catch (Exception e) {
+                                newSelect = selectByteArray.toString();
+                            }
+                        }
+
+                        newByteArray = newByteArray.withAppended(newSelect);
+                        newByteArray = newByteArray.withAppended(endByteArray);
+
                         try {
-                            if(ende_config==""){ throw new Exception();}
-                            newSelect = autoUtil.matchFunc(newSelect,ende_config,mode_config,true);
+                            messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
                         } catch (Exception e) {
-                            newSelect = selectByteArray.toString();
+                            if (!e.getMessage().contains("Item is read-only")) {
+                                api.logging().logToError("Error in TagContextMenu", e);
+                            }
                         }
                     }
+                    else {
+                        HttpResponse httpResponse = messageEditorHttpRequestResponse.requestResponse().response();
+                        ByteArray selectByteArray = httpResponse.toByteArray().subArray(range);
+                        ByteArray startByteArray = httpResponse.toByteArray().subArray(0, range.startIndexInclusive());
 
-                    newByteArray = newByteArray.withAppended(newSelect);
-                    newByteArray = newByteArray.withAppended(endByteArray);
-                    try {
-                        messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
-                    }
-                    catch (Exception e) {
-                        if (!e.getMessage().contains("Item is read-only")){
-                            api.logging().logToError("Error in TagContextMenu",e);
+                        byte[] bytes = Arrays.copyOfRange(httpResponse.toByteArray().getBytes(), range.endIndexExclusive(), httpResponse.toByteArray().length());
+                        ByteArray endByteArray = ByteArray.byteArray(bytes);
+                        ByteArray newByteArray = startByteArray;
+                        String newSelect = selectByteArray.toString();
+                        api.logging().logToOutput("original:\n" + newSelect);
+                        String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
+                        String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
+
+                        String[] config = panel.findConf(host, path);
+
+                        if (config != null) {
+                            String mode_config = config[5];
+                            String ende_config = config[6];
+                            try {
+                                if (ende_config == "") {
+                                    throw new Exception();
+                                }
+                                newSelect = autoUtil.matchFunc(newSelect, ende_config, mode_config, true);
+                                api.logging().logToOutput("encrypt:\n" + newSelect+"\n");
+                            } catch (Exception e) {
+                                newSelect = selectByteArray.toString();
+                            }
+                        }
+
+                        newByteArray = newByteArray.withAppended(newSelect);
+                        newByteArray = newByteArray.withAppended(endByteArray);
+
+                        try {
+                            messageEditorHttpRequestResponse.setResponse(HttpResponse.httpResponse(newByteArray));
+                        } catch (Exception e) {
+                            if (!e.getMessage().contains("Item is read-only")) {
+                                api.logging().logToError("Error in TagContextMenu", e);
+                            }
                         }
                     }
                 });
@@ -119,40 +166,82 @@ public class TagContextMenu implements ContextMenuItemsProvider {
                 decodeTtem.addActionListener(l -> {
 
                     Range range = messageEditorHttpRequestResponse.selectionOffsets().get();
-                    HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
-                    String req = messageEditorHttpRequestResponse.requestResponse().request().toString();
-                    ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
-                    ByteArray startByteArray = httpRequest.toByteArray().subArray(0, range.startIndexInclusive());
+                    if (messageEditorHttpRequestResponse.selectionContext().name()=="REQUEST") {
+                        HttpRequest httpRequest = messageEditorHttpRequestResponse.requestResponse().request();
+                        ByteArray selectByteArray = httpRequest.toByteArray().subArray(range);
+                        ByteArray startByteArray = httpRequest.toByteArray().subArray(0, range.startIndexInclusive());
+                        byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(), range.endIndexExclusive(), httpRequest.toByteArray().length());
+                        ByteArray endByteArray = ByteArray.byteArray(bytes);
+                        ByteArray newByteArray = startByteArray;
+                        String newSelect = selectByteArray.toString();
+                        api.logging().logToOutput("original:\n" +newSelect);
+                        String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
+                        String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
 
-                    byte[] bytes = Arrays.copyOfRange(httpRequest.toByteArray().getBytes(), range.endIndexExclusive(), httpRequest.toByteArray().length());
-                    ByteArray endByteArray = ByteArray.byteArray(bytes);
-                    ByteArray newByteArray = startByteArray;
-                    String newSelect = selectByteArray.toString();
-                    String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
-                    String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
+                        String[] config = panel.findConf(host, path);
 
-                    String[] config = panel.findConf(host, path);
+                        if (config != null) {
+                            String mode_config = config[5];
+                            String ende_config = config[6];
+                            try {
+                                if (ende_config == "") {
+                                    throw new Exception();
+                                }
+                                newSelect = autoUtil.matchFunc(newSelect, ende_config, mode_config, false, true);
+                                api.logging().logToOutput("decrypt:\n" + newSelect+"\n");
+                            } catch (Exception e) {
+                                newSelect = selectByteArray.toString();
+                            }
+                        }
 
-                    if (config != null) {
-                        String mode_config = config[4];
-                        String ende_config = config[5];
+                        newByteArray = newByteArray.withAppended(newSelect);
+                        newByteArray = newByteArray.withAppended(endByteArray);
+
                         try {
-                            if(ende_config==""){ throw new Exception();}
-                            newSelect = autoUtil.matchFunc(newSelect,ende_config,mode_config,false);
+                            messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
                         } catch (Exception e) {
-                            newSelect = selectByteArray.toString();
+                            if (!e.getMessage().contains("Item is read-only")) {
+                                api.logging().logToError("Error in TagContextMenu", e);
+                            }
                         }
                     }
+                    else {
+                        HttpResponse httpResponse = messageEditorHttpRequestResponse.requestResponse().response();
+                        ByteArray selectByteArray = httpResponse.toByteArray().subArray(range);
+                        ByteArray startByteArray = httpResponse.toByteArray().subArray(0, range.startIndexInclusive());
 
-                    newByteArray = newByteArray.withAppended(newSelect);
-                    newByteArray = newByteArray.withAppended(endByteArray);
+                        byte[] bytes = Arrays.copyOfRange(httpResponse.toByteArray().getBytes(), range.endIndexExclusive(), httpResponse.toByteArray().length());
+                        ByteArray endByteArray = ByteArray.byteArray(bytes);
+                        ByteArray newByteArray = startByteArray;
+                        String newSelect = selectByteArray.toString();
+                        api.logging().logToOutput("original:\n" +newSelect);
+                        String host = event.messageEditorRequestResponse().get().requestResponse().request().headerValue("Host");
+                        String path = event.messageEditorRequestResponse().get().requestResponse().request().path();
 
-                    try {
-                        messageEditorHttpRequestResponse.setRequest(HttpRequest.httpRequest(newByteArray));
-                    }
-                    catch (Exception e) {
-                        if (!e.getMessage().contains("Item is read-only")){
-                            api.logging().logToError("Error in TagContextMenu",e);
+                        String[] config = panel.findConf(host, path);
+
+                        if (config != null) {
+                            String mode_config = config[5];
+                            String ende_config = config[6];
+                            try {
+                                if (ende_config == "") {
+                                    throw new Exception();
+                                }
+                                newSelect = autoUtil.matchFunc(newSelect, ende_config, mode_config, false, true);
+                                api.logging().logToOutput("decrypt:\n" + newSelect+"\n");
+                            } catch (Exception e) {
+                                newSelect = selectByteArray.toString();
+                            }
+                        }
+                        newByteArray = newByteArray.withAppended(newSelect);
+                        newByteArray = newByteArray.withAppended(endByteArray);
+
+                        try {
+                            messageEditorHttpRequestResponse.setResponse(HttpResponse.httpResponse(newByteArray));
+                        } catch (Exception e) {
+                            if (!e.getMessage().contains("Item is read-only")) {
+                                api.logging().logToError("Error in TagContextMenu", e);
+                            }
                         }
                     }
                 });

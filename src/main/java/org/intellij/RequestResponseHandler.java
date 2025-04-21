@@ -1,6 +1,7 @@
 package org.intellij;
 
 import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.core.Annotations;
 import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
@@ -20,8 +21,6 @@ public class RequestResponseHandler implements HttpHandler {
         autoUtil = new AutoUtil(api);
     }
 
-
-
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
         if (httpRequestToBeSent.toolSource().toolType().toolName().equals("Repeater") || httpRequestToBeSent.toolSource().toolType().toolName().equals("Intruder")) {
@@ -33,8 +32,8 @@ public class RequestResponseHandler implements HttpHandler {
             if (config != null) {
                 String reg_config = config[2];
                 String tag_config = config[3];
-                String mode_config = config[4];
-                String ende_config = config[5];
+                String mode_config = config[5];
+                String ende_config = config[6];
                 if(ende_config==""){return null;}
                 try {
 //                        提取urlpath
@@ -62,23 +61,22 @@ public class RequestResponseHandler implements HttpHandler {
             String host = httpResponseReceived.initiatingRequest().headerValue("Host");
             String path = httpResponseReceived.initiatingRequest().path();
             String[] config = rootPanel.findConf(host, path);
-
             if (config != null) {
+                if (config[4]!="0"){return ResponseReceivedAction.continueWith(httpResponseReceived);}
                 String reg_config = config[2];
                 String tag_config = config[3];
-                String mode_config = config[4];
-                String ende_config = config[5];
+                String mode_config = config[5];
+                String ende_config = config[6];
                 if(ende_config==""){return null;}
                 try {
                     String bodyString = httpResponseReceived.bodyToString();
                     String result = autoUtil.matchFunc(bodyString,ende_config,reg_config,tag_config,mode_config,false);
                     HttpResponse newResponse = httpResponseReceived.withBody(result);
-
-                    montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString()+"\n"+newResponse.bodyToString());
+                    montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString()+"\n"+newResponse.bodyToString()+"\n");
                     return ResponseReceivedAction.continueWith(newResponse);
                 }
                 catch (Exception e) {
-                    montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString()+"\n"+httpResponseReceived.bodyToString());
+                    montoyaApi.logging().logToOutput(httpResponseReceived.initiatingRequest().toByteArray().toString()+"\n"+httpResponseReceived.bodyToString()+"\n");
                     montoyaApi.logging().logToError("响应体解密异常,是否为空: "+e.getMessage());
                 }
             }
