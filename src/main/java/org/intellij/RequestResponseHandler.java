@@ -6,7 +6,6 @@ import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
-
 import java.util.List;
 
 public class RequestResponseHandler implements HttpHandler {
@@ -18,7 +17,7 @@ public class RequestResponseHandler implements HttpHandler {
     public RequestResponseHandler(MontoyaApi api, RootPanel panel, AutoUtil util) {
         montoyaApi = api;
         rootPanel = panel;
-        autoUtil = new AutoUtil(api);
+        autoUtil = util;
     }
 
     @Override

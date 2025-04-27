@@ -22,10 +22,10 @@ public class TagContextMenu implements ContextMenuItemsProvider {
     RootPanel panel;
     AutoUtil autoUtil;
 
-    public TagContextMenu(MontoyaApi montoyaApi, RootPanel rootPanel) {
+    public TagContextMenu(MontoyaApi montoyaApi, RootPanel rootPanel, AutoUtil util) {
         api = montoyaApi;
         panel = rootPanel;
-        autoUtil = new AutoUtil(montoyaApi);
+        autoUtil = util;
     }
 
     public List<Component> provideMenuItems(ContextMenuEvent event) {

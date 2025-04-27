@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 // 需要自拟的部分---------------------------------------------------------------
-require('./muban_ende.js');
+// require('./muban_ende.js');
 
 // 供burp调用的加密函数的加载方式,可用于进一步处理加密结果;入参为打标记字段
 function encryptFunction(data) {
@@ -40,8 +40,8 @@ if(process.argv.length == 4){
             http.createServer(function (req, res) {
                 let path = url.parse(req.url);
                 let postparms = '';
-                if (path.pathname === '/encrypt') {
-                    console.log("encrypt");
+                if (path.pathname.endsWith('/encrypt')) {
+                    console.log("Encrypt:");
                     req.on('data', (parms) => {
                         postparms += parms;
                     });
@@ -50,8 +50,8 @@ if(process.argv.length == 4){
                         console.log(encryptFunction(postparms));
                         res.end(encryptFunction(postparms));
                     })
-                } else if (path.pathname === '/decrypt') {
-                    console.log("decrypt")
+                } else if (path.pathname.endsWith('/decrypt')) {
+                    console.log("Decrypt:")
                     req.on('data', (parms) => {
                         postparms += parms
                     })
@@ -61,8 +61,8 @@ if(process.argv.length == 4){
                         console.log(dec);
                         res.end(dec);
                     })
-                } else if (path.pathname === '/decrypt_RB') {
-                    console.log("decrypt RightButton")
+                } else if (path.pathname.endsWith('/decrypt_RB')) {
+                    console.log("Decrypt RightButton:")
                     req.on('data', (parms) => {
                         postparms += parms
                     })

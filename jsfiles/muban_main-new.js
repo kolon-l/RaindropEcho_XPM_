@@ -14,6 +14,10 @@ function decryptFunction(data) {
   return decrypt(data);
 }
 
+function decryptFunction_RB(data) {
+  return decrypt(data);
+}
+
 // 以下不用动
 const USAGE = `
 Usage:
@@ -38,15 +42,21 @@ function handleServerMode(port) {
       for await (const chunk of req) {
         requestBody += chunk;
       }
-      if (pathname === '/encrypt') {
+      if (pathname.endsWith('/encrypt')) {
         const encrypted = encryptFunction(requestBody);
-        console.log("encrypt");
+        console.log("encrypt:");
         console.log(requestBody);
         console.log(encrypted);
         res.end(encrypted);
-      } else if (pathname === '/decrypt') {
+      } else if (pathname.endsWith('/decrypt')) {
         const decrypted = decryptFunction(requestBody);
-        console.log("decrypt");
+        console.log("decrypt:");
+        console.log(requestBody);
+        console.log(decrypted);
+        res.end(decrypted);
+      } else if (pathname.endsWith('/decrypt_RB')) {
+        const decrypted = decryptFunction_RB(requestBody);
+        console.log("decrypt_RB:");
         console.log(requestBody);
         console.log(decrypted);
         res.end(decrypted);
@@ -69,9 +79,11 @@ function handleServerMode(port) {
 // 命令行加密/解密处理
 function handleCLICommand(mode, input, outputFile) {
   try {
-    const result = mode.startsWith('encrypt') 
-      ? encryptFunction(input)
-      : decryptFunction(input);
+    let result = '';
+
+    if (mode.startsWith('encrypt')){result = encryptFunction(input)}
+    if (mode.startsWith('decrypt')){result = decryptFunction(input)}
+    if (mode.startsWith('decrypt_RB')){result = decryptFunction_RB(input)}
 
     if (outputFile) {
       fs.writeFileSync(outputFile, result, 'utf8');
@@ -96,11 +108,13 @@ function main() {
 
     case 'encrypt_c':
     case 'decrypt_c':
+    case 'decrypt_c_RB':
       handleCLICommand(mode, arg1);
       break;
 
     case 'encrypt':
     case 'decrypt':
+    case 'decrypt_RB':
       handleCLICommand(mode, fs.readFileSync(arg1, 'utf8'), arg2);
       break;
 

@@ -71,8 +71,8 @@ public class RootPanel {
                     jsTable.getCellEditor().stopCellEditing();
                 }
 
-                if (tableModel.getValueAt(selectedRow, 5).equals("WebSocket")) {
-                    String target = tableModel.getValueAt(selectedRow, 6).toString();
+                if (tableModel.getValueAt(selectedRow, 6).equals("WebSocket")) {
+                    String target = tableModel.getValueAt(selectedRow, 7).toString();
                     autoUtil.deleteWSServer(target);
                 }
                 jsTable.clearSelection();
@@ -113,14 +113,14 @@ public class RootPanel {
                                 tableModel.getValueAt(i, 6).toString(),
                                 tableModel.getValueAt(i, 7).toString(),
                         });
-                        if (tableModel.getValueAt(i, 5).equals("WebSocket")) {
-                            String target = tableModel.getValueAt(i, 6).toString();
+                        if (tableModel.getValueAt(i, 6).equals("WebSocket")) {
+                            String target = tableModel.getValueAt(i, 7).toString();
                             autoUtil.addWSServer(target);
                         }
                     } else {
-                        if (tableModel.getValueAt(i, 5).equals("WebSocket")) {
+                        if (tableModel.getValueAt(i, 6).equals("WebSocket")) {
 //                            api.logging().logToOutput(autoUtil.checkWSServer(tableModel.getValueAt(i, 6).toString()) ? "ws存活" : "ws未存活");
-                            autoUtil.deleteWSServer(tableModel.getValueAt(i, 6).toString());
+                            autoUtil.deleteWSServer(tableModel.getValueAt(i, 7).toString());
                         }
                     }
                 }

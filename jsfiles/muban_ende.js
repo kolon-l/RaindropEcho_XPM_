@@ -28,7 +28,7 @@ var loader = undefined;
 1、扣出主函数，获取加载器
 2、加载器全局引用
 3、扣加解密相关函数
-3、去掉初始化方法，去检测
+4、去掉初始化方法，去检测
 5、调用测试，补环境等
 */
 
@@ -45,7 +45,7 @@ function decrypt(t){
     return t+"de"
 }
 
-global.encrypt = encrypt ;//将需要调用的函数或对象编程全局
-exports.encrypt = encrypt ;//使用export来暴露接口，不然nodejs无法找到我们的加密方法
+global.encrypt = encrypt ;
+exports.encrypt = encrypt ;
 global.decrypt = decrypt ;
 exports.decrypt = decrypt ;

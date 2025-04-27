@@ -34,10 +34,11 @@ public class RainDropEcho_XPM implements BurpExtension, ExtensionUnloadingHandle
         autoUtil = new AutoUtil(api);
         rootPanel = new RootPanel(api,autoUtil);
         api.userInterface().registerSuiteTab(PluginName,rootPanel.$$$getRootComponent$$$());
+
         reqResHandler = new RequestResponseHandler(api,rootPanel,autoUtil);
         api.http().registerHttpHandler(reqResHandler);
 
-        api.userInterface().registerContextMenuItemsProvider( new TagContextMenu(api,rootPanel));
+        api.userInterface().registerContextMenuItemsProvider( new TagContextMenu(api,rootPanel,autoUtil));
 
         api.logging().logToOutput(LOGO);
 

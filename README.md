@@ -214,6 +214,10 @@ var decryptClient = new WsClient("ws://127.0.0.1:12080/decrypt",function(data){
     return data+"de";
 });
 
+var decryptRBClient = new WsClient("ws://127.0.0.1:12080/decrypt_RB",function(data){
+//    var decrypt = this.DecryptFunc(data);
+    return data+"de";
+});
 ```
 
 
