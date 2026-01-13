@@ -9,7 +9,7 @@
 4. **特定字段的生成/改造**。
 5. **支持WebSocket调用接口**，提供一种简化的JS RPC方法。
 6. **新增聚合处理功能**，可将多个标记点的数据聚合后进行处理，适用于一些有数据签名的场景。
-7. ~~**更懒人的情况**，思路：node.js集成Cyberchef模块，搭建方案参考jsfiles/cyberchef-env/。使用：将网页端的Cyberchef调好方法把recipe复制到main_cyberchef.js的对应配置处，用JS或者API模式调用即可，甚至可以一点代码不写。~~
+7. ~~**懒人必备**，思路：node.js集成Cyberchef模块，搭建方案参考jsfiles/cyberchef-env/。使用：将网页端的Cyberchef调好方法把recipe复制到main_cyberchef.js的对应配置处，用JS或者API模式调用即可，甚至可以一点代码不写。吗？~~
 
 
 
@@ -73,7 +73,7 @@
 * [x] 支持http接口，可通过muban_main.js启动服务
 * [x] 支持WebSocket接口，提供hook方式，可实现JS RPC调用
 * [x] 新增聚合处理功能，可将多个标记点的数据聚合后进行处理
-* [x] ~~提供一个node中集成Cyberchef的搭建和使用方案~~
+* [x] 提供一个node中集成Cyberchef的搭建和使用方案
 
 
 
