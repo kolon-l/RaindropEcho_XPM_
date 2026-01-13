@@ -8,17 +8,56 @@
 3. **自定义加解密JS，适用于能直接扣JS的情况**：简单的加解密方法可直接复制前端源码，复杂情况需要做逆向；已提供Webpack的逆向模板；
 4. **特定字段的生成/改造**。
 5. **支持WebSocket调用接口**，提供一种简化的JS RPC方法。
+6. **新增聚合处理功能**，可将多个标记点的数据聚合后进行处理，适用于一些有数据签名的场景。
+7. ~~**更懒人的情况**，思路：node.js集成Cyberchef模块，搭建方案参考jsfiles/cyberchef-env/。使用：将网页端的Cyberchef调好方法把recipe复制到main_cyberchef.js的对应配置处，用JS或者API模式调用即可，甚至可以一点代码不写。~~
 
-使用逻辑：
 
-1. 跟踪到前端加解密函数后，扣出对应JS到muban_ende.js和muban_main.js中调用调试。 
-2. 插件页面配置接口地址、提取正则等基本信息。
+
+使用逻辑一：
+
+1. 跟踪到前端加解密函数后，扣出对应JS到muban_main.js(muban_ende.js)中调用调试。
+
+   调试方法：
+
+   ​	node muban_main.js [encrypt_c|decrypt_c] [input]
+
+   ​	node muban_main.js [encrypt|decrypt] [inputfile] [outputfile]
+
+2. 右键发送数据包到插件，插件页面配置接口地址，提取正则等基本信息。
+
 3. 选择加解密调用模式，并配置：
    1. JSFile：muban_main.js地址
    2. API：执行node muban_main.js server 8888，配置地址，例：http://127.0.0.1:8888/
-   3. WebSocket--参考JSRPC，注入浏览器环境后（代码下文已提供）配置地址，例：ws://127.0.0.1:12080/
+
 4. 勾选状态启用后，Repeater、Intruder中打好标签（默认为"(-xxxx-)"，和正则一致）发包时便开始调用方法；或者不打标签，选择要加、解密的数据后使用右键功能，右键功能可在Proxy下使用。
+
 5. 处理数据在插件日志中有记录。
+
+
+
+使用逻辑二：
+
+1. 控制台定位到加解密对应的调用函数，打好断点
+2. 右键发送数据包到插件，插件页面配置接口地址，提取正则等基本信息。
+3. 选择调用模式：WebSocket--配置地址：ws://127.0.0.1:12080/，将JS注入到浏览器环境后（下文已提供），并在WsClient中完成加解密方法调用。
+
+
+
+使用逻辑三：
+
+1. 在node中集成Cyberchef，搭建方案参考jsfiles/cyberchef-env/，
+
+2. 在Cyberchef html上调整好要做的加解密逻辑，复制recipe(JSON)到main_cyberchef.js对应配置处，并完成调试。
+
+3. 右键发送数据包到插件，插件页面配置接口地址，提取正则等基本信息。
+
+4. 选择加解密调用模式，并配置：
+
+   JSFile：muban_main.js地址
+
+   1. API：执行node muban_main.js server 8888，配置地址，例：http://127.0.0.1:8888/
+
+5. 勾选状态启用配置。
 
 ![0408172836518](README.assets/0408172836518.png)
 
@@ -34,6 +73,9 @@
 * [x] UI更新;新增正则功能，可修改默认表达式;新增右键标记功能
 * [x] 支持http接口，可通过muban_main.js启动服务
 * [x] 支持WebSocket接口，提供hook方式，可实现JS RPC调用
+* [x] 新增聚合处理功能，可将多个标记点的数据聚合后进行处理
+* [x] ~~提供一个node中集成Cyberchef的搭建和使用方案~~
+
 
 
 # 环境需求
@@ -85,6 +127,13 @@ function decryptFunction(data){
   // 解密函数的加载方式
   // 示例
   // 原样返回
+  let res = data;
+  return res
+}
+
+function decryptFunction_RB(data){
+    // 对应右键解密调用的方法
+    // 与decryptFunction区别在于，decryptFunction用于自动处理响应包，decryptFunction_RB用于处理请求包数据
   let res = data;
   return res
 }
@@ -203,7 +252,7 @@ WsClient.prototype.handlerRequest = function (data,process) {
 
 **WebSocket连接方式**
 ```连接方式
-//Websocket client 连接方法，自定义处理逻辑，
+//Websocket client 连接方法，自定义处理逻辑，decryptRBClient为右键解密调用功能
 var encryptClient = new WsClient("ws://127.0.0.1:12080/encrypt",function(data){
 //    var encrypt = this.EncryptFunc(data);
     return data+"en";

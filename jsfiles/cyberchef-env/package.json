@@ -1,0 +1,21 @@
+{
+  "name": "cyberchef-test",
+  "version": "1.0.0",
+  "description": "CyberChef CommonJS测试项目",
+  "main": "test_cyberchef.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node test_cyberchef.js"
+  },
+  "keywords": [
+    "cyberchef",
+    "security",
+    "testing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cyberchef": "^10.19.3",
+    "terser": "^5.44.1"
+  }
+}
