@@ -52,10 +52,9 @@
 3. 右键发送数据包到插件，插件页面配置接口地址，提取正则等基本信息。
 
 4. 选择加解密调用模式，并配置：
+   1. JSFile：muban_main.js地址
 
-   JSFile：muban_main.js地址
-
-   1. API：执行node muban_main.js server 8888，配置地址，例：http://127.0.0.1:8888/
+   2. API：执行node muban_main.js server 8888，配置地址，例：http://127.0.0.1:8888/
 
 5. 勾选状态启用配置。
 
